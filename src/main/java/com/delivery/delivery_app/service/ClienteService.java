@@ -1,0 +1,180 @@
+package com.delivery.delivery_app.service;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.delivery.delivery_app.dto.ItemPedidoRequest;
+import com.delivery.delivery_app.model.ItemPedido;
+import com.delivery.delivery_app.model.Pedido;
+import com.delivery.delivery_app.model.Producto;
+import com.delivery.delivery_app.model.Usuario;
+import com.delivery.delivery_app.repository.PedidoRepository;
+import com.delivery.delivery_app.repository.ProductoRepository;
+import com.delivery.delivery_app.repository.UsuarioRepository;
+
+@Service
+public class ClienteService {
+
+    private static final Logger log = Logger.getLogger(ClienteService.class.getName());
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private PedidoRepository pedidoRepository;
+    
+    @Autowired
+    private ProductoRepository productoRepository;
+    
+    @Autowired
+    private CalculadoraPedido calculadoraPedido;
+
+    @Transactional
+    public Usuario crearUsuario(Usuario usuario) {
+        log.info("Creando nuevo usuario: " + usuario.getNombre());
+        
+        if (usuario.getId() == null) {
+            usuario.setId(UUID.randomUUID().toString());
+        }
+        
+        // Validar que no exista usuario con el mismo teléfono
+        usuarioRepository.findByTelefono(usuario.getTelefono())
+                .ifPresent(u -> {
+                    throw new RuntimeException("Ya existe un usuario con el teléfono: " + usuario.getTelefono());
+                });
+        
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+        log.info("Usuario creado exitosamente con ID: " + usuarioGuardado.getId());
+        
+        return usuarioGuardado;
+    }
+
+    public Usuario obtenerUsuarioPorId(String usuarioId) {
+        log.fine("Buscando usuario con ID: " + usuarioId);
+        
+        return usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> {
+                    log.severe("Usuario no encontrado con ID: " + usuarioId);
+                    return new RuntimeException("Usuario no encontrado con ID: " + usuarioId);
+                });
+    }
+
+    @Transactional
+    public Pedido realizarPedido(String usuarioId, List<ItemPedidoRequest> items) {
+        log.info("Realizando pedido para usuario ID: " + usuarioId);
+        
+        Usuario usuario = obtenerUsuarioPorId(usuarioId);
+        
+        Pedido pedido = new Pedido();
+        pedido.setId(UUID.randomUUID().toString());
+        pedido.setUsuario(usuario);
+        pedido.setEstado("PENDIENTE");
+        pedido.setDireccionEntrega(usuario.getDireccion());
+
+        for (ItemPedidoRequest itemRequest : items) {
+            Producto producto = productoRepository.findById(itemRequest.getProductoId())
+                    .orElseThrow(() -> {
+                        log.severe("Producto no encontrado con ID: " + itemRequest.getProductoId());
+                        return new RuntimeException("Producto no encontrado con ID: " + itemRequest.getProductoId());
+                    });
+
+            if (!producto.getDisponible()) {
+                throw new RuntimeException("El producto " + producto.getNombre() + " no está disponible");
+            }
+
+            ItemPedido item = new ItemPedido();
+            item.setId(UUID.randomUUID().toString());
+            item.setProducto(producto);
+            item.setCantidad(itemRequest.getCantidad());
+            item.setPrecioUnitario(itemRequest.getPrecioUnitario());
+
+            pedido.getItems().add(item);
+            item.setPedido(pedido);
+        }
+
+        // Calcular total usando la calculadora
+        Double total = calculadoraPedido.calcularTotal(pedido);
+        pedido.setTotal(total);
+
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+        log.info("Pedido realizado exitosamente. ID: " + pedidoGuardado.getId() + ", Total: " + total);
+
+        return pedidoGuardado;
+    }
+
+    public List<Pedido> verHistorialPedidos(String usuarioId) {
+        log.fine("Obteniendo historial de pedidos para usuario ID: " + usuarioId);
+        
+        obtenerUsuarioPorId(usuarioId);
+        List<Pedido> historial = pedidoRepository.findHistorialByUsuarioId(usuarioId);
+        
+        log.fine("Se encontraron " + historial.size() + " pedidos en el historial");
+        
+        return historial;
+    }
+
+    public List<Producto> buscarProductosPorCategoria(String categoria) {
+        log.fine("Buscando productos por categoría: " + categoria);
+        
+        List<Producto> productos = productoRepository.findByCategoria(categoria);
+        log.fine("Se encontraron " + productos.size() + " productos en la categoría " + categoria);
+        
+        return productos;
+    }
+
+    public List<Producto> buscarProductosDisponibles() {
+        log.fine("Obteniendo productos disponibles");
+        
+        List<Producto> productos = productoRepository.findByDisponibleTrue();
+        log.fine("Se encontraron " + productos.size() + " productos disponibles");
+        
+        return productos;
+    }
+
+    public List<Producto> obtenerTodosLosProductos() {
+        log.fine("Obteniendo todos los productos");
+        
+        List<Producto> productos = productoRepository.findAll();
+        log.fine("Total de productos: " + productos.size());
+        
+        return productos;
+    }
+
+    public Producto obtenerProductoPorId(String productoId) {
+        log.fine("Buscando producto con ID: " + productoId);
+        
+        return productoRepository.findById(productoId)
+                .orElseThrow(() -> {
+                    log.severe("Producto no encontrado con ID: " + productoId);
+                    return new RuntimeException("Producto no encontrado con ID: " + productoId);
+                });
+    }
+
+    public Pedido obtenerPedidoPorId(String pedidoId) {
+        log.fine("Buscando pedido con ID: " + pedidoId);
+        
+        return pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> {
+                    log.severe("Pedido no encontrado con ID: " + pedidoId);
+                    return new RuntimeException("Pedido no encontrado con ID: " + pedidoId);
+                });
+    }
+
+    @Transactional
+    public Pedido actualizarEstadoPedido(String pedidoId, String nuevoEstado) {
+        log.info("Actualizando estado del pedido " + pedidoId + " a " + nuevoEstado);
+        
+        Pedido pedido = obtenerPedidoPorId(pedidoId);
+        pedido.setEstado(nuevoEstado);
+        
+        Pedido pedidoActualizado = pedidoRepository.save(pedido);
+        log.info("Estado del pedido actualizado exitosamente");
+        
+        return pedidoActualizado;
+    }
+}

@@ -1,0 +1,60 @@
+package com.delivery.delivery_app.model;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+@Entity
+@Table(name = "items_pedido")
+public class ItemPedido {
+    
+    @Id
+    private String id;
+    
+    @NotNull(message = "La cantidad es obligatoria")
+    @Min(value = 1, message = "La cantidad debe ser al menos 1")
+    private Integer cantidad;
+    
+    @NotNull(message = "El precio unitario es obligatorio")
+    @Min(value = 0, message = "El precio unitario no puede ser negativo")
+    private Double precioUnitario;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pedido_id")
+    private Pedido pedido;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "producto_id")
+    private Producto producto;
+    
+    public ItemPedido() {}
+    
+    public ItemPedido(String id, Integer cantidad, Double precioUnitario, Pedido pedido, Producto producto) {
+        this.id = id;
+        this.cantidad = cantidad;
+        this.precioUnitario = precioUnitario;
+        this.pedido = pedido;
+        this.producto = producto;
+    }
+    
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    
+    public Integer getCantidad() { return cantidad; }
+    public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
+    
+    public Double getPrecioUnitario() { return precioUnitario; }
+    public void setPrecioUnitario(Double precioUnitario) { this.precioUnitario = precioUnitario; }
+    
+    public Pedido getPedido() { return pedido; }
+    public void setPedido(Pedido pedido) { this.pedido = pedido; }
+    
+    public Producto getProducto() { return producto; }
+    public void setProducto(Producto producto) { this.producto = producto; }
+}
