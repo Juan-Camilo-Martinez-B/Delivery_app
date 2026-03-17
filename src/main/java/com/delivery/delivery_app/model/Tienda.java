@@ -1,5 +1,7 @@
 package com.delivery.delivery_app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "tiendas")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Tienda {
     
     @Id

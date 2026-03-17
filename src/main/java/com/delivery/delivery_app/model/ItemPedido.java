@@ -1,5 +1,7 @@
 package com.delivery.delivery_app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -26,6 +28,7 @@ public class ItemPedido {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")
+    @JsonIgnore
     private Pedido pedido;
     
     @ManyToOne(fetch = FetchType.LAZY)

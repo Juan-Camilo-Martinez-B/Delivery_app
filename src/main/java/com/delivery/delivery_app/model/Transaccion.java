@@ -1,5 +1,7 @@
 package com.delivery.delivery_app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -25,6 +27,7 @@ public abstract class Transaccion {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")
+    @JsonIgnore
     private Pedido pedido;
     
     @PrePersist

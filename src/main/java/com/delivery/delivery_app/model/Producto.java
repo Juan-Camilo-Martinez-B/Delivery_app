@@ -11,6 +11,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "productos")
 public class Producto {
@@ -32,6 +34,7 @@ public class Producto {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tienda_id")
+    @JsonIgnoreProperties({ "productos", "hibernateLazyInitializer", "handler" })
     private Tienda tienda;
     
     public Producto() {}
