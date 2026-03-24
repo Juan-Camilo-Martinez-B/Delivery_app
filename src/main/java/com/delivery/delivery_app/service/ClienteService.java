@@ -12,6 +12,7 @@ import com.delivery.delivery_app.dto.ItemPedidoRequest;
 import com.delivery.delivery_app.model.ItemPedido;
 import com.delivery.delivery_app.model.Pedido;
 import com.delivery.delivery_app.model.Producto;
+import com.delivery.delivery_app.model.Tienda;
 import com.delivery.delivery_app.model.Usuario;
 import com.delivery.delivery_app.repository.PedidoRepository;
 import com.delivery.delivery_app.repository.ProductoRepository;
@@ -76,6 +77,7 @@ public class ClienteService {
         pedido.setEstado("PENDIENTE");
         pedido.setDireccionEntrega(usuario.getDireccion());
 
+        Tienda tiendaDelPedido = null;
         for (ItemPedidoRequest itemRequest : items) {
             Producto producto = productoRepository.findById(itemRequest.getProductoId())
                     .orElseThrow(() -> {
@@ -87,6 +89,16 @@ public class ClienteService {
                 throw new RuntimeException("El producto " + producto.getNombre() + " no está disponible");
             }
 
+            if (producto.getTienda() == null) {
+                throw new RuntimeException("El producto " + producto.getNombre() + " no tiene tienda asociada");
+            }
+
+            if (tiendaDelPedido == null) {
+                tiendaDelPedido = producto.getTienda();
+            } else if (!tiendaDelPedido.getId().equals(producto.getTienda().getId())) {
+                throw new RuntimeException("Todos los productos del pedido deben pertenecer a la misma tienda");
+            }
+
             ItemPedido item = new ItemPedido();
             item.setId(UUID.randomUUID().toString());
             item.setProducto(producto);
@@ -96,6 +108,11 @@ public class ClienteService {
             pedido.getItems().add(item);
             item.setPedido(pedido);
         }
+
+        if (tiendaDelPedido == null) {
+            throw new RuntimeException("El pedido debe contener al menos un producto");
+        }
+        pedido.setTienda(tiendaDelPedido);
 
         // Calcular total usando la calculadora
         Double total = calculadoraPedido.calcularTotal(pedido);

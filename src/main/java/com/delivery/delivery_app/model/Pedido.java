@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "pedidos")
 public class Pedido {
@@ -28,6 +30,11 @@ public class Pedido {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tienda_id")
+    @JsonIgnoreProperties({ "productos", "hibernateLazyInitializer", "handler" })
+    private Tienda tienda;
     
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ItemPedido> items = new ArrayList<>();
@@ -70,6 +77,9 @@ public class Pedido {
     
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+
+    public Tienda getTienda() { return tienda; }
+    public void setTienda(Tienda tienda) { this.tienda = tienda; }
     
     public List<ItemPedido> getItems() { return items; }
     public void setItems(List<ItemPedido> items) { this.items = items; }
