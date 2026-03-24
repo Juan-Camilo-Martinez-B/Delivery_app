@@ -1,5 +1,6 @@
 package com.delivery.delivery_app.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
@@ -9,7 +10,10 @@ import javax.persistence.Table;
 @PrimaryKeyJoinColumn(name = "usuario_id")
 public class Cliente extends Usuario {
     
+    @Column(nullable = false)
     private Integer puntosFidelidad = 0;
+    
+    @Column
     private String preferencias;
     
     public Cliente() {

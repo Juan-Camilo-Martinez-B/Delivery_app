@@ -16,13 +16,19 @@ import javax.persistence.PrePersist;
 public abstract class Transaccion {
     
     @Id
+    @Column(nullable = false)
     private String id;
     
     @Column(nullable = false)
     private Double monto;
     
+    @Column(nullable = false)
     private Boolean completado = false;
+    
+    @Column(nullable = false)
     private LocalDateTime fecha;
+    
+    @Column
     private String referencia;
     
     @ManyToOne(fetch = FetchType.LAZY)

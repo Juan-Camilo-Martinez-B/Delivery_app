@@ -10,13 +10,19 @@ import java.util.List;
 public class Pedido {
     
     @Id
+    @Column(nullable = false)
     private String id;
     
     @Column(nullable = false)
     private LocalDateTime fecha;
     
+    @Column(nullable = false)
     private String estado;
+    
+    @Column(nullable = false)
     private Double total;
+    
+    @Column
     private String direccionEntrega;
     
     @ManyToOne(fetch = FetchType.LAZY)

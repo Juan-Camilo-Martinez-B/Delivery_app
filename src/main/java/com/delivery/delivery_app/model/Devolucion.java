@@ -1,5 +1,6 @@
 package com.delivery.delivery_app.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -14,6 +15,7 @@ public class Devolucion extends Transaccion {
     @JoinColumn(name = "pago_id", nullable = false)
     private Pago pago;
     
+    @Column
     private String motivo;
     
     public Devolucion() {}

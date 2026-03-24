@@ -26,10 +26,16 @@ public class Producto {
     
     @NotNull(message = "El precio es obligatorio")
     @Min(value = 0, message = "El precio no puede ser negativo")
+    @Column(nullable = false)
     private Double precio;
     
+    @Column(nullable = false)
     private Boolean disponible = true;
+    
+    @Column
     private String categoria;
+    
+    @Column
     private String descripcion;
     
     @ManyToOne(fetch = FetchType.LAZY)

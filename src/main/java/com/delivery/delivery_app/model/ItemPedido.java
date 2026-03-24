@@ -2,6 +2,7 @@ package com.delivery.delivery_app.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -16,14 +17,17 @@ import javax.validation.constraints.NotNull;
 public class ItemPedido {
     
     @Id
+    @Column(nullable = false)
     private String id;
     
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 1, message = "La cantidad debe ser al menos 1")
+    @Column(nullable = false)
     private Integer cantidad;
     
     @NotNull(message = "El precio unitario es obligatorio")
     @Min(value = 0, message = "El precio unitario no puede ser negativo")
+    @Column(nullable = false)
     private Double precioUnitario;
     
     @ManyToOne(fetch = FetchType.LAZY)

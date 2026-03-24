@@ -26,6 +26,11 @@ public interface PedidoRepository extends JpaRepository<Pedido, String> {
             @Param("inicio") LocalDateTime inicio,
             @Param("fin") LocalDateTime fin);
     
+    @Query("SELECT p FROM Pedido p WHERE p.fecha BETWEEN :inicio AND :fin")
+    List<Pedido> findPedidosPorFecha(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fin") LocalDateTime fin);
+    
     @Query("SELECT COUNT(p) FROM Pedido p WHERE p.estado = :estado")
     Long countByEstado(@Param("estado") String estado);
     

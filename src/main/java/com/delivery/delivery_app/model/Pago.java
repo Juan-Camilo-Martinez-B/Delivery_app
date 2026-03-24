@@ -1,5 +1,6 @@
 package com.delivery.delivery_app.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -7,7 +8,10 @@ import javax.persistence.Table;
 @Table(name = "pagos")
 public class Pago extends Transaccion {
     
+    @Column
     private String metodo;
+    
+    @Column
     private Double montoRecibido;
     
     public Pago() {}

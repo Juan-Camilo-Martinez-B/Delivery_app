@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +15,12 @@ import com.delivery.delivery_app.model.Tienda;
 import com.delivery.delivery_app.repository.PagoRepository;
 import com.delivery.delivery_app.repository.PedidoRepository;
 import com.delivery.delivery_app.repository.ProductoRepository;
+import com.delivery.delivery_app.repository.TiendaRepository;
 
 @Service
 public class TiendaService {
 
     private static final Logger log = Logger.getLogger(TiendaService.class.getName());
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Autowired
     private ProductoRepository productoRepository;
@@ -35,6 +30,9 @@ public class TiendaService {
     
     @Autowired
     private PagoRepository pagoRepository;
+    
+    @Autowired
+    private TiendaRepository tiendaRepository;
 
     @Transactional
     public Tienda crearTienda(Tienda tienda) {
@@ -44,22 +42,21 @@ public class TiendaService {
             tienda.setId(UUID.randomUUID().toString());
         }
 
-        entityManager.persist(tienda);
-        log.info("Tienda creada exitosamente con ID: " + tienda.getId());
+        Tienda tiendaGuardada = tiendaRepository.save(tienda);
+        log.info("Tienda creada exitosamente con ID: " + tiendaGuardada.getId());
 
-        return tienda;
+        return tiendaGuardada;
     }
 
+    @Transactional(readOnly = true)
     public Tienda obtenerTiendaPorId(String tiendaId) {
         log.fine("Buscando tienda con ID: " + tiendaId);
 
-        Tienda tienda = entityManager.find(Tienda.class, tiendaId);
-        if (tienda == null) {
-            log.severe("Tienda no encontrada con ID: " + tiendaId);
-            throw new RuntimeException("Tienda no encontrada con ID: " + tiendaId);
-        }
-
-        return tienda;
+        return tiendaRepository.findById(tiendaId)
+                .orElseThrow(() -> {
+                    log.severe("Tienda no encontrada con ID: " + tiendaId);
+                    return new RuntimeException("Tienda no encontrada con ID: " + tiendaId);
+                });
     }
 
     @Transactional
@@ -85,10 +82,12 @@ public class TiendaService {
             tienda.setHorarioCierre(datos.getHorarioCierre());
         }
 
+        Tienda tiendaActualizada = tiendaRepository.save(tienda);
         log.info("Datos de tienda actualizados exitosamente");
-        return tienda;
+        return tiendaActualizada;
     }
 
+    @Transactional(readOnly = true)
     public List<Producto> verProductosDeTienda(String tiendaId) {
         log.fine("Obteniendo productos de tienda ID: " + tiendaId);
 

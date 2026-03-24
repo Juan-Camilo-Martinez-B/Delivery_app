@@ -165,6 +165,6 @@ public class PedidoService {
     public List<Pedido> obtenerPedidosPorRangoFechas(LocalDateTime inicio, LocalDateTime fin) {
         log.fine("Buscando pedidos entre " + inicio + " y " + fin);
 
-        return pedidoRepository.findPedidosPorEstadoYFecha(null, inicio, fin);
+        return pedidoRepository.findPedidosPorFecha(inicio, fin);
     }
 }

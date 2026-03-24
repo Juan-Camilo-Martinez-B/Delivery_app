@@ -1,5 +1,6 @@
 package com.delivery.delivery_app.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
@@ -9,8 +10,13 @@ import javax.persistence.Table;
 @PrimaryKeyJoinColumn(name = "usuario_id")
 public class Repartidor extends Usuario {
     
+    @Column(nullable = false)
     private Boolean disponible = true;
+    
+    @Column
     private String vehiculo;
+    
+    @Column(nullable = false)
     private Integer entregasRealizadas = 0;
     
     public Repartidor() {

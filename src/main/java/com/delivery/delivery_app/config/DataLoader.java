@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -26,10 +29,10 @@ import com.delivery.delivery_app.model.Repartidor;
 import com.delivery.delivery_app.model.Tienda;
 import com.delivery.delivery_app.repository.ProductoRepository;
 import com.delivery.delivery_app.repository.UsuarioRepository;
+import com.delivery.delivery_app.service.ClienteService;
 import com.delivery.delivery_app.service.PagoService;
 import com.delivery.delivery_app.service.PedidoService;
 import com.delivery.delivery_app.service.RepartidorService;
-import com.delivery.delivery_app.service.ClienteService;
 import com.delivery.delivery_app.service.TiendaService;
 
 @Component
@@ -57,11 +60,23 @@ public class DataLoader implements CommandLineRunner {
     
     @Autowired
     private RepartidorService repartidorService;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
         log.info("Cargando datos iniciales...");
+        
+        ajustarEsquemaTiendasSiEsNecesario();
+        
+        if (usuarioRepository.findByTelefono("111").isPresent()
+                || usuarioRepository.findByTelefono("123456789").isPresent()
+                || usuarioRepository.findByTelefono("987654321").isPresent()) {
+            log.info("Datos iniciales ya existen. Saltando DataLoader.");
+            return;
+        }
         
         // Crear cliente
         Cliente cliente = new Cliente();
@@ -190,5 +205,29 @@ public class DataLoader implements CommandLineRunner {
         }
         
         log.info("=== FIN SIMULACIÓN ===");
+    }
+    
+    private void ajustarEsquemaTiendasSiEsNecesario() {
+        try {
+            entityManager.createNativeQuery(
+                    "INSERT INTO usuarios (id, nombre, telefono, direccion) " +
+                    "SELECT t.id, COALESCE(t.nombre, 'Tienda'), t.telefono, t.direccion " +
+                    "FROM tiendas t " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM usuarios u WHERE u.id = t.id)"
+            ).executeUpdate();
+        } catch (Exception ignored) {
+        }
+        try {
+            entityManager.createNativeQuery("ALTER TABLE tiendas ALTER COLUMN nombre DROP NOT NULL").executeUpdate();
+        } catch (Exception ignored) {
+        }
+        try {
+            entityManager.createNativeQuery("ALTER TABLE tiendas ALTER COLUMN telefono DROP NOT NULL").executeUpdate();
+        } catch (Exception ignored) {
+        }
+        try {
+            entityManager.createNativeQuery("ALTER TABLE tiendas ALTER COLUMN direccion DROP NOT NULL").executeUpdate();
+        } catch (Exception ignored) {
+        }
     }
 }
