@@ -24,8 +24,8 @@ public class RepartidorService {
     private UsuarioRepository usuarioRepository;
 
     @Transactional
-    public Pedido aceptarPedido(String pedidoId) {
-        log.info("Repartidor aceptando pedido ID: " + pedidoId);
+    public Pedido aceptarPedido(String repartidorId, String pedidoId) {
+        log.info("Repartidor " + repartidorId + " aceptando pedido ID: " + pedidoId);
 
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> {
@@ -33,15 +33,22 @@ public class RepartidorService {
                     return new RuntimeException("Pedido no encontrado con ID: " + pedidoId);
                 });
 
+        Repartidor repartidor = (Repartidor) usuarioRepository.findById(repartidorId)
+                .orElseThrow(() -> {
+                    log.severe("Repartidor no encontrado con ID: " + repartidorId);
+                    return new RuntimeException("Repartidor no encontrado con ID: " + repartidorId);
+                });
+
         // Validar que el pedido esté listo para ser aceptado
         if (!"LISTO".equals(pedido.getEstado())) {
             throw new RuntimeException("El pedido no está listo para ser aceptado. Estado actual: " + pedido.getEstado());
         }
 
+        pedido.setRepartidor(repartidor);
         pedido.setEstado("EN_CAMINO");
         Pedido pedidoActualizado = pedidoRepository.save(pedido);
 
-        log.info("Pedido " + pedidoId + " aceptado exitosamente. Nuevo estado: EN_CAMINO");
+        log.info("Pedido " + pedidoId + " aceptado por repartidor " + repartidorId + ". Nuevo estado: EN_CAMINO");
         return pedidoActualizado;
     }
 

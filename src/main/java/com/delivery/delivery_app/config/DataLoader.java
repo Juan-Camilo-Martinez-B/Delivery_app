@@ -185,7 +185,7 @@ public class DataLoader implements CommandLineRunner {
         Pedido pedidoListo = tiendaService.marcarPedidoListo(pedido.getId());
         log.info("Pedido marcado como listo: " + pedidoListo.getId() + " - Estado: " + pedidoListo.getEstado());
         
-        Pedido pedidoEnCamino = repartidorService.aceptarPedido(pedido.getId());
+        Pedido pedidoEnCamino = repartidorService.aceptarPedido(repartidor.getId(), pedido.getId());
         log.info("Pedido aceptado por repartidor: " + pedidoEnCamino.getId() + " - Estado: " + pedidoEnCamino.getEstado());
         
         Pedido pedidoEntregado = repartidorService.marcarComoEntregado(pedido.getId());

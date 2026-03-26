@@ -122,7 +122,7 @@ Guarda `id` como `pagoId`.
 
 ### 11) Repartidor: aceptar pedido
 
-**PUT** `{{baseUrl}}/api/usuarios/repartidores/pedidos/{{pedidoId}}/aceptar`
+**PUT** `{{baseUrl}}/api/usuarios/repartidores/{{repartidorId}}/pedidos/{{pedidoId}}/aceptar`
 
 ### 12) Repartidor: marcar como entregado
 

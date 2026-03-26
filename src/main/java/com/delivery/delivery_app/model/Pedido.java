@@ -1,9 +1,19 @@
 package com.delivery.delivery_app.model;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -29,12 +39,18 @@ public class Pedido {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
+    @JsonIgnoreProperties({ "pedidos", "hibernateLazyInitializer", "handler" })
     private Cliente cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tienda_id")
     @JsonIgnoreProperties({ "productos", "hibernateLazyInitializer", "handler" })
     private Tienda tienda;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "repartidor_id")
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    private Repartidor repartidor;
     
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ItemPedido> items = new ArrayList<>();
@@ -80,6 +96,9 @@ public class Pedido {
 
     public Tienda getTienda() { return tienda; }
     public void setTienda(Tienda tienda) { this.tienda = tienda; }
+    
+    public Repartidor getRepartidor() { return repartidor; }
+    public void setRepartidor(Repartidor repartidor) { this.repartidor = repartidor; }
     
     public List<ItemPedido> getItems() { return items; }
     public void setItems(List<ItemPedido> items) { this.items = items; }

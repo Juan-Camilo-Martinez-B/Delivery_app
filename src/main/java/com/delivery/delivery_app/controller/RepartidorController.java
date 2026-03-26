@@ -25,10 +25,12 @@ public class RepartidorController {
     @Autowired
     private RepartidorService repartidorService;
 
-    @PutMapping("/pedidos/{pedidoId}/aceptar")
-    public ResponseEntity<Pedido> aceptarPedido(@PathVariable String pedidoId) {
-        log.info("PUT /api/repartidores/pedidos/" + pedidoId + "/aceptar - Aceptando pedido");
-        Pedido pedido = repartidorService.aceptarPedido(pedidoId);
+    @PutMapping("/{repartidorId}/pedidos/{pedidoId}/aceptar")
+    public ResponseEntity<Pedido> aceptarPedido(
+            @PathVariable String repartidorId,
+            @PathVariable String pedidoId) {
+        log.info("PUT /api/repartidores/" + repartidorId + "/pedidos/" + pedidoId + "/aceptar - Aceptando pedido");
+        Pedido pedido = repartidorService.aceptarPedido(repartidorId, pedidoId);
         return new ResponseEntity<>(pedido, HttpStatus.OK);
     }
 
