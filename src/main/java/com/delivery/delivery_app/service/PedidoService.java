@@ -15,10 +15,10 @@ import com.delivery.delivery_app.model.ItemPedido;
 import com.delivery.delivery_app.model.Pedido;
 import com.delivery.delivery_app.model.Producto;
 import com.delivery.delivery_app.model.Tienda;
-import com.delivery.delivery_app.model.Usuario;
+import com.delivery.delivery_app.model.Cliente;
 import com.delivery.delivery_app.repository.PedidoRepository;
 import com.delivery.delivery_app.repository.ProductoRepository;
-import com.delivery.delivery_app.repository.UsuarioRepository;
+import com.delivery.delivery_app.repository.ClienteRepository;
 
 @Service
 public class PedidoService {
@@ -26,7 +26,7 @@ public class PedidoService {
     private static final Logger log = Logger.getLogger(PedidoService.class.getName());
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private ClienteRepository clienteRepository;
     
     @Autowired
     private PedidoRepository pedidoRepository;
@@ -38,20 +38,20 @@ public class PedidoService {
     private CalculadoraPedido calculadoraPedido;
 
     @Transactional
-    public Pedido crearPedido(String usuarioId, List<ItemPedidoRequest> items) {
-        log.info("Creando nuevo pedido para usuario ID: " + usuarioId);
+    public Pedido crearPedido(String clienteId, List<ItemPedidoRequest> items) {
+        log.info("Creando nuevo pedido para cliente ID: " + clienteId);
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> {
-                    log.severe("Usuario no encontrado con ID: " + usuarioId);
-                    return new RuntimeException("Usuario no encontrado con ID: " + usuarioId);
+                    log.severe("Cliente no encontrado con ID: " + clienteId);
+                    return new RuntimeException("Cliente no encontrado con ID: " + clienteId);
                 });
 
         Pedido pedido = new Pedido();
         pedido.setId(UUID.randomUUID().toString());
-        pedido.setUsuario(usuario);
+        pedido.setCliente(cliente);
         pedido.setEstado("PENDIENTE");
-        pedido.setDireccionEntrega(usuario.getDireccion());
+        pedido.setDireccionEntrega(cliente.getDireccion());
 
         Tienda tiendaDelPedido = null;
         for (ItemPedidoRequest itemRequest : items) {
@@ -136,8 +136,8 @@ public class PedidoService {
                 "=====================================",
                 pedido.getId(),
                 pedido.getFecha().toString(),
-                pedido.getUsuario().getNombre(),
-                pedido.getUsuario().getTelefono(),
+                pedido.getCliente().getNombre(),
+                pedido.getCliente().getTelefono(),
                 pedido.getDireccionEntrega(),
                 itemsStr,
                 total

@@ -18,9 +18,9 @@ Headers recomendados en todas:
 
 ## Flujo recomendado (end-to-end)
 
-### 1) Crear usuario (cliente)
+### 1) Crear cliente
 
-**POST** `{{baseUrl}}/api/clientes/usuarios`
+**POST** `{{baseUrl}}/api/usuarios/clientes`
 
 Body (raw / JSON):
 ```json
@@ -35,7 +35,7 @@ Guarda `id` de la respuesta como `usuarioId`.
 
 ### 2) Crear tienda
 
-**POST** `{{baseUrl}}/api/tienda`
+**POST** `{{baseUrl}}/api/usuarios/tiendas`
 
 Body (raw / JSON):
 ```json
@@ -52,7 +52,7 @@ Guarda `id` como `tiendaId`.
 
 ### 3) Agregar producto a una tienda
 
-**POST** `{{baseUrl}}/api/tienda/{{tiendaId}}/productos`
+**POST** `{{baseUrl}}/api/usuarios/tiendas/{{tiendaId}}/productos`
 
 Body (raw / JSON):
 ```json
@@ -69,11 +69,11 @@ Guarda `id` como `productoId`.
 
 ### 4) Ver todos los productos (cliente)
 
-**GET** `{{baseUrl}}/api/clientes/productos`
+**GET** `{{baseUrl}}/api/usuarios/clientes/productos`
 
 ### 5) Crear pedido (desde clientes)
 
-**POST** `{{baseUrl}}/api/clientes/{{usuarioId}}/pedidos`
+**POST** `{{baseUrl}}/api/usuarios/clientes/{{usuarioId}}/pedidos`
 
 Body (raw / JSON):
 ```json
@@ -114,130 +114,72 @@ Guarda `id` como `pagoId`.
 
 ### 9) Marcar pedido como listo (tienda)
 
-**PUT** `{{baseUrl}}/api/tienda/pedidos/{{pedidoId}}/listo`
+**PUT** `{{baseUrl}}/api/usuarios/tiendas/pedidos/{{pedidoId}}/listo`
 
 ### 10) Repartidor: ver pedidos disponibles
 
-**GET** `{{baseUrl}}/api/repartidores/pedidos/disponibles`
+**GET** `{{baseUrl}}/api/usuarios/repartidores/pedidos/disponibles`
 
 ### 11) Repartidor: aceptar pedido
 
-**PUT** `{{baseUrl}}/api/repartidores/pedidos/{{pedidoId}}/aceptar`
+**PUT** `{{baseUrl}}/api/usuarios/repartidores/pedidos/{{pedidoId}}/aceptar`
 
 ### 12) Repartidor: marcar como entregado
 
-**PUT** `{{baseUrl}}/api/repartidores/pedidos/{{pedidoId}}/entregado`
+**PUT** `{{baseUrl}}/api/usuarios/repartidores/pedidos/{{pedidoId}}/entregado`
 
-### 13) Reembolsar pago
+### 13) Crear repartidor (Extra para completar flujo)
+
+**POST** `{{baseUrl}}/api/usuarios/repartidores`
+
+Body (raw / JSON):
+```json
+{
+  "nombre": "Carlos López",
+  "telefono": "987654321",
+  "direccion": "Avenida Central 456",
+  "vehiculo": "Moto"
+}
+```
+
+Guarda `id` como `repartidorId`.
+
+### 14) Reembolsar pago
 
 **POST** `{{baseUrl}}/api/pagos/{{pagoId}}/reembolsar`
 
-## Endpoints adicionales (útiles para validar persistencia)
+## Gestión de Estados del Pedido
 
-### Clientes
+El estado de un pedido cambia a través de acciones específicas realizadas por los diferentes actores (Tienda y Repartidor) mediante métodos **PUT** (siguiendo las convenciones REST para actualizaciones parciales):
 
-**Obtener usuario por ID**
+| Acción | Actor | Endpoint | Nuevo Estado |
+| :--- | :--- | :--- | :--- |
+| **Pagar** | Cliente | `POST /api/pagos` | `PENDIENTE` (con pago asociado) |
+| **Marcar Listo** | Tienda | `PUT /api/usuarios/tiendas/pedidos/{id}/listo` | `LISTO` |
+| **Aceptar** | Repartidor | `PUT /api/usuarios/repartidores/pedidos/{id}/aceptar` | `EN_CAMINO` |
+| **Entregar** | Repartidor | `PUT /api/usuarios/repartidores/pedidos/{id}/entregado` | `ENTREGADO` |
+| **Genérico** | Admin | `PUT /api/pedidos/{id}/estado/{NUEVO_ESTADO}` | *(Cualquiera)* |
 
-**GET** `{{baseUrl}}/api/clientes/usuarios/{{usuarioId}}`
+## Cómo modificar el DataLoader
 
-**Ver historial de pedidos de un usuario**
+El [DataLoader.java](file:///c:/Users/XTHZC7/Desktop/UCC/Sexto_Semestre/Programacion_orientada_a_objetos/delivery_app/src/main/java/com/delivery/delivery_app/config/DataLoader.java) es el encargado de precargar datos al iniciar la aplicación.
 
-**GET** `{{baseUrl}}/api/clientes/{{usuarioId}}/historial`
+### Cuándo modificarlo:
+1. **Nuevos registros**: Si quieres que la app inicie con más tiendas o productos por defecto.
+2. **Cambios en el Modelo**: Si agregas un nuevo campo obligatorio a `Usuario` o `Producto`, debes actualizar los constructores o setters en el `run`.
+3. **Pruebas de flujo**: Si quieres cambiar el flujo de simulación que imprime logs al final.
 
-**Ver productos disponibles**
+### Pasos para hacer cambios:
+1. **Localiza el método `run`**: Aquí se crean las instancias de los objetos.
+2. **Usa los repositorios o servicios**: Siempre usa `tiendaService.crearTienda(tienda)` o `clienteRepository.save(cliente)` para persistir.
+3. **Condición de parada**: El DataLoader tiene un `if` al inicio que verifica si ya existen datos (ej: `if (clienteRepository.findByTelefono("111").isPresent())`). Si quieres que tus cambios se apliquen en una BD ya poblada, debes borrar los datos primero con el script SQL de `TRUNCATE`.
 
-**GET** `{{baseUrl}}/api/clientes/productos/disponibles`
-
-**Buscar productos por categoría**
-
-**GET** `{{baseUrl}}/api/clientes/productos/categoria/Comida%20R%C3%A1pida`
-
-### Tienda
-
-**Actualizar datos de tienda**
-
-**PUT** `{{baseUrl}}/api/tienda/{{tiendaId}}`
-
-Body (raw / JSON):
-```json
-{
-  "nombre": "Super Tienda (Editada)",
-  "telefono": "5559999",
-  "direccion": "Nueva dirección 123",
-  "horarioApertura": "09:00:00",
-  "horarioCierre": "21:00:00"
-}
+### Ejemplo para agregar una nueva tienda por defecto:
+```java
+Tienda nueva = new Tienda();
+nueva.setId(UUID.randomUUID().toString());
+nueva.setNombre("Nueva Tienda");
+// ... set otros campos
+tiendaService.crearTienda(nueva);
 ```
-
-**Ver productos de una tienda**
-
-**GET** `{{baseUrl}}/api/tienda/{{tiendaId}}/productos`
-
-**Actualizar un producto**
-
-**PUT** `{{baseUrl}}/api/tienda/productos/{{productoId}}`
-
-Body (raw / JSON):
-```json
-{
-  "nombre": "Hamburguesa Clásica XL",
-  "precio": 14.5,
-  "disponible": true,
-  "categoria": "Comida Rápida",
-  "descripcion": "Versión más grande"
-}
-```
-
-**Eliminar un producto**
-
-**DELETE** `{{baseUrl}}/api/tienda/productos/{{productoId}}`
-
-**Ver pedidos pendientes**
-
-**GET** `{{baseUrl}}/api/tienda/pedidos/pendientes`
-
-### Pedidos
-
-**Crear pedido (endpoint alternativo)**
-
-**POST** `{{baseUrl}}/api/pedidos/{{usuarioId}}`
-
-Body (raw / JSON):
-```json
-[
-  {
-    "productoId": "{{productoId}}",
-    "cantidad": 1,
-    "precioUnitario": 12.99
-  }
-]
-```
-
-**Obtener pedidos por estado**
-
-**GET** `{{baseUrl}}/api/pedidos/estado/PENDIENTE`
-
-**Obtener pedidos por rango de fechas**
-
-**GET** `{{baseUrl}}/api/pedidos/rango-fechas?inicio=2026-01-01T00:00:00&fin=2026-12-31T23:59:59`
-
-**Actualizar estado del pedido**
-
-**PUT** `{{baseUrl}}/api/pedidos/{{pedidoId}}/estado/PAGADO`
-
-### Pagos
-
-**Obtener pago por ID**
-
-**GET** `{{baseUrl}}/api/pagos/{{pagoId}}`
-
-### Repartidores
-
-**Ver pedidos asignados (según implementación actual filtra por estado EN_CAMINO)**
-
-**GET** `{{baseUrl}}/api/repartidores/{{repartidorId}}/pedidos-asignados`
-
-**Actualizar disponibilidad**
-
-**PUT** `{{baseUrl}}/api/repartidores/{{repartidorId}}/disponibilidad/true`
 

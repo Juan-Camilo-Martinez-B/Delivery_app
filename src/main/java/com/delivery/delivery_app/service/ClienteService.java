@@ -13,10 +13,10 @@ import com.delivery.delivery_app.model.ItemPedido;
 import com.delivery.delivery_app.model.Pedido;
 import com.delivery.delivery_app.model.Producto;
 import com.delivery.delivery_app.model.Tienda;
-import com.delivery.delivery_app.model.Usuario;
+import com.delivery.delivery_app.model.Cliente;
 import com.delivery.delivery_app.repository.PedidoRepository;
 import com.delivery.delivery_app.repository.ProductoRepository;
-import com.delivery.delivery_app.repository.UsuarioRepository;
+import com.delivery.delivery_app.repository.ClienteRepository;
 
 @Service
 public class ClienteService {
@@ -24,7 +24,7 @@ public class ClienteService {
     private static final Logger log = Logger.getLogger(ClienteService.class.getName());
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private ClienteRepository clienteRepository;
     
     @Autowired
     private PedidoRepository pedidoRepository;
@@ -36,46 +36,46 @@ public class ClienteService {
     private CalculadoraPedido calculadoraPedido;
 
     @Transactional
-    public Usuario crearUsuario(Usuario usuario) {
-        log.info("Creando nuevo usuario: " + usuario.getNombre());
+    public Cliente crearCliente(Cliente cliente) {
+        log.info("Creando nuevo cliente: " + cliente.getNombre());
         
-        if (usuario.getId() == null) {
-            usuario.setId(UUID.randomUUID().toString());
+        if (cliente.getId() == null) {
+            cliente.setId(UUID.randomUUID().toString());
         }
         
-        // Validar que no exista usuario con el mismo teléfono
-        usuarioRepository.findByTelefono(usuario.getTelefono())
+        // Validar que no exista cliente con el mismo teléfono
+        clienteRepository.findByTelefono(cliente.getTelefono())
                 .ifPresent(u -> {
-                    throw new RuntimeException("Ya existe un usuario con el teléfono: " + usuario.getTelefono());
+                    throw new RuntimeException("Ya existe un cliente con el teléfono: " + cliente.getTelefono());
                 });
         
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-        log.info("Usuario creado exitosamente con ID: " + usuarioGuardado.getId());
+        Cliente clienteGuardado = clienteRepository.save(cliente);
+        log.info("Cliente creado exitosamente con ID: " + clienteGuardado.getId());
         
-        return usuarioGuardado;
+        return clienteGuardado;
     }
 
-    public Usuario obtenerUsuarioPorId(String usuarioId) {
-        log.fine("Buscando usuario con ID: " + usuarioId);
+    public Cliente obtenerClientePorId(String clienteId) {
+        log.fine("Buscando cliente con ID: " + clienteId);
         
-        return usuarioRepository.findById(usuarioId)
+        return clienteRepository.findById(clienteId)
                 .orElseThrow(() -> {
-                    log.severe("Usuario no encontrado con ID: " + usuarioId);
-                    return new RuntimeException("Usuario no encontrado con ID: " + usuarioId);
+                    log.severe("Cliente no encontrado con ID: " + clienteId);
+                    return new RuntimeException("Cliente no encontrado con ID: " + clienteId);
                 });
     }
 
     @Transactional
-    public Pedido realizarPedido(String usuarioId, List<ItemPedidoRequest> items) {
-        log.info("Realizando pedido para usuario ID: " + usuarioId);
+    public Pedido realizarPedido(String clienteId, List<ItemPedidoRequest> items) {
+        log.info("Realizando pedido para cliente ID: " + clienteId);
         
-        Usuario usuario = obtenerUsuarioPorId(usuarioId);
+        Cliente cliente = obtenerClientePorId(clienteId);
         
         Pedido pedido = new Pedido();
         pedido.setId(UUID.randomUUID().toString());
-        pedido.setUsuario(usuario);
+        pedido.setCliente(cliente);
         pedido.setEstado("PENDIENTE");
-        pedido.setDireccionEntrega(usuario.getDireccion());
+        pedido.setDireccionEntrega(cliente.getDireccion());
 
         Tienda tiendaDelPedido = null;
         for (ItemPedidoRequest itemRequest : items) {
@@ -124,11 +124,11 @@ public class ClienteService {
         return pedidoGuardado;
     }
 
-    public List<Pedido> verHistorialPedidos(String usuarioId) {
-        log.fine("Obteniendo historial de pedidos para usuario ID: " + usuarioId);
+    public List<Pedido> verHistorialPedidos(String clienteId) {
+        log.fine("Obteniendo historial de pedidos para cliente ID: " + clienteId);
         
-        obtenerUsuarioPorId(usuarioId);
-        List<Pedido> historial = pedidoRepository.findHistorialByUsuarioId(usuarioId);
+        obtenerClientePorId(clienteId);
+        List<Pedido> historial = pedidoRepository.findHistorialByClienteId(clienteId);
         
         log.fine("Se encontraron " + historial.size() + " pedidos en el historial");
         

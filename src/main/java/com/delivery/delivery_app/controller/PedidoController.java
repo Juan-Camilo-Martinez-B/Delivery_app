@@ -32,12 +32,12 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
 
-    @PostMapping("/{usuarioId}")
+    @PostMapping("/{clienteId}")
     public ResponseEntity<Pedido> crearPedido(
-            @PathVariable String usuarioId,
+            @PathVariable String clienteId,
             @Valid @RequestBody List<ItemPedidoRequest> items) {
-        log.info("POST /api/pedidos/" + usuarioId + " - Creando pedido con " + items.size() + " items");
-        Pedido pedido = pedidoService.crearPedido(usuarioId, items);
+        log.info("POST /api/pedidos/" + clienteId + " - Creando pedido con " + items.size() + " items");
+        Pedido pedido = pedidoService.crearPedido(clienteId, items);
         return new ResponseEntity<>(pedido, HttpStatus.CREATED);
     }
 

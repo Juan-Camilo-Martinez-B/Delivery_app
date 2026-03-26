@@ -1,7 +1,7 @@
 package com.delivery.delivery_app.repository;
 
 import com.delivery.delivery_app.model.Pedido;
-import com.delivery.delivery_app.model.Usuario;
+import com.delivery.delivery_app.model.Cliente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,12 +13,12 @@ import java.util.List;
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, String> {
     
-    List<Pedido> findByUsuario(Usuario usuario);
+    List<Pedido> findByCliente(Cliente cliente);
     
     List<Pedido> findByEstado(String estado);
     
-    @Query("SELECT p FROM Pedido p WHERE p.usuario.id = :usuarioId ORDER BY p.fecha DESC")
-    List<Pedido> findHistorialByUsuarioId(@Param("usuarioId") String usuarioId);
+    @Query("SELECT p FROM Pedido p WHERE p.cliente.id = :clienteId ORDER BY p.fecha DESC")
+    List<Pedido> findHistorialByClienteId(@Param("clienteId") String clienteId);
     
     @Query("SELECT p FROM Pedido p WHERE p.estado = :estado AND p.fecha BETWEEN :inicio AND :fin")
     List<Pedido> findPedidosPorEstadoYFecha(

@@ -17,7 +17,7 @@ import com.delivery.delivery_app.model.Repartidor;
 import com.delivery.delivery_app.service.RepartidorService;
 
 @RestController
-@RequestMapping("/api/repartidores")
+@RequestMapping("/api/usuarios/repartidores")
 public class RepartidorController {
 
     private static final Logger log = Logger.getLogger(RepartidorController.class.getName());

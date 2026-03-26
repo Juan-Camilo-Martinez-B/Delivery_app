@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.delivery.delivery_app.dto.ItemPedidoRequest;
+import com.delivery.delivery_app.model.Cliente;
 import com.delivery.delivery_app.model.Pedido;
 import com.delivery.delivery_app.model.Producto;
-import com.delivery.delivery_app.model.Usuario;
 import com.delivery.delivery_app.service.ClienteService;
 
 @RestController
-@RequestMapping("/api/clientes")
+@RequestMapping("/api/usuarios/clientes")
 public class ClienteController {
 
     private static final Logger log = Logger.getLogger(ClienteController.class.getName());
@@ -30,33 +30,33 @@ public class ClienteController {
     @Autowired
     private ClienteService clienteService;
 
-    @PostMapping("/usuarios")
-    public ResponseEntity<Usuario> crearUsuario(@Valid @RequestBody Usuario usuario) {
-        log.info("POST /api/clientes/usuarios - Creando nuevo usuario: " + usuario.getNombre());
-        Usuario nuevoUsuario = clienteService.crearUsuario(usuario);
-        return new ResponseEntity<>(nuevoUsuario, HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<Cliente> crearCliente(@Valid @RequestBody Cliente cliente) {
+        log.info("POST /api/clientes - Creando nuevo cliente: " + cliente.getNombre());
+        Cliente nuevoCliente = clienteService.crearCliente(cliente);
+        return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
     }
 
-    @GetMapping("/usuarios/{usuarioId}")
-    public ResponseEntity<Usuario> obtenerUsuario(@PathVariable String usuarioId) {
-        log.info("GET /api/clientes/usuarios/" + usuarioId + " - Obteniendo usuario");
-        Usuario usuario = clienteService.obtenerUsuarioPorId(usuarioId);
-        return new ResponseEntity<>(usuario, HttpStatus.OK);
+    @GetMapping("/{clienteId}")
+    public ResponseEntity<Cliente> obtenerCliente(@PathVariable String clienteId) {
+        log.info("GET /api/clientes/" + clienteId + " - Obteniendo cliente");
+        Cliente cliente = clienteService.obtenerClientePorId(clienteId);
+        return new ResponseEntity<>(cliente, HttpStatus.OK);
     }
 
-    @PostMapping("/{usuarioId}/pedidos")
+    @PostMapping("/{clienteId}/pedidos")
     public ResponseEntity<Pedido> realizarPedido(
-            @PathVariable String usuarioId,
+            @PathVariable String clienteId,
             @Valid @RequestBody List<ItemPedidoRequest> items) {
-        log.info("POST /api/clientes/" + usuarioId + "/pedidos - Realizando pedido con " + items.size() + " items");
-        Pedido nuevoPedido = clienteService.realizarPedido(usuarioId, items);
+        log.info("POST /api/clientes/" + clienteId + "/pedidos - Realizando pedido con " + items.size() + " items");
+        Pedido nuevoPedido = clienteService.realizarPedido(clienteId, items);
         return new ResponseEntity<>(nuevoPedido, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{usuarioId}/historial")
-    public ResponseEntity<List<Pedido>> verHistorial(@PathVariable String usuarioId) {
-        log.info("GET /api/clientes/" + usuarioId + "/historial - Obteniendo historial de pedidos");
-        List<Pedido> historial = clienteService.verHistorialPedidos(usuarioId);
+    @GetMapping("/{clienteId}/historial")
+    public ResponseEntity<List<Pedido>> verHistorial(@PathVariable String clienteId) {
+        log.info("GET /api/clientes/" + clienteId + "/historial - Obteniendo historial de pedidos");
+        List<Pedido> historial = clienteService.verHistorialPedidos(clienteId);
         return new ResponseEntity<>(historial, HttpStatus.OK);
     }
 

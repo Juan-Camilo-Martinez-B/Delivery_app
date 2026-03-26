@@ -27,6 +27,7 @@ import com.delivery.delivery_app.model.Pedido;
 import com.delivery.delivery_app.model.Producto;
 import com.delivery.delivery_app.model.Repartidor;
 import com.delivery.delivery_app.model.Tienda;
+import com.delivery.delivery_app.repository.ClienteRepository;
 import com.delivery.delivery_app.repository.ProductoRepository;
 import com.delivery.delivery_app.repository.UsuarioRepository;
 import com.delivery.delivery_app.service.ClienteService;
@@ -42,6 +43,9 @@ public class DataLoader implements CommandLineRunner {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
     
     @Autowired
     private ProductoRepository productoRepository;
@@ -71,9 +75,8 @@ public class DataLoader implements CommandLineRunner {
         
         ajustarEsquemaTiendasSiEsNecesario();
         
-        if (usuarioRepository.findByTelefono("111").isPresent()
-                || usuarioRepository.findByTelefono("123456789").isPresent()
-                || usuarioRepository.findByTelefono("987654321").isPresent()) {
+        if (clienteRepository.findByTelefono("111").isPresent()
+                || clienteRepository.findByTelefono("123456789").isPresent()) {
             log.info("Datos iniciales ya existen. Saltando DataLoader.");
             return;
         }
@@ -84,7 +87,7 @@ public class DataLoader implements CommandLineRunner {
         cliente.setNombre("Juan Pérez");
         cliente.setTelefono("123456789");
         cliente.setDireccion("Calle Principal 123");
-        usuarioRepository.save(cliente);
+        clienteRepository.save(cliente);
         log.info("Cliente creado: " + cliente.getNombre() + " - ID: " + cliente.getId());
 
         // Crear repartidor
@@ -157,7 +160,7 @@ public class DataLoader implements CommandLineRunner {
         ana.setNombre("Ana");
         ana.setTelefono("111");
         ana.setDireccion("Calle 1");
-        ana = (Cliente) clienteService.crearUsuario(ana);
+        ana = clienteService.crearCliente(ana);
         log.info("Cliente simulado creado: " + ana.getNombre() + " - ID: " + ana.getId());
         
         Producto productoPedido1 = productosDisponibles.get(0);
@@ -209,25 +212,29 @@ public class DataLoader implements CommandLineRunner {
     
     private void ajustarEsquemaTiendasSiEsNecesario() {
         try {
+            // Eliminar columnas redundantes que ahora están en la tabla 'usuarios'
+            String[] columnsToDrop = {"nombre", "telefono", "direccion"};
+            for (String col : columnsToDrop) {
+                try {
+                    entityManager.createNativeQuery("ALTER TABLE tiendas DROP COLUMN IF EXISTS " + col).executeUpdate();
+                } catch (Exception ignored) {}
+            }
+
+            // Manejar el renombre de 'id' a 'usuario_id' de forma segura
             entityManager.createNativeQuery(
-                    "INSERT INTO usuarios (id, nombre, telefono, direccion) " +
-                    "SELECT t.id, COALESCE(t.nombre, 'Tienda'), t.telefono, t.direccion " +
-                    "FROM tiendas t " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM usuarios u WHERE u.id = t.id)"
+                "DO $$ " +
+                "BEGIN " +
+                "    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'tiendas' AND column_name = 'id') THEN " +
+                "        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'tiendas' AND column_name = 'usuario_id') THEN " +
+                "            ALTER TABLE tiendas DROP COLUMN id; " +
+                "        ELSE " +
+                "            ALTER TABLE tiendas RENAME COLUMN id TO usuario_id; " +
+                "        END IF; " +
+                "    END IF; " +
+                "END $$;"
             ).executeUpdate();
-        } catch (Exception ignored) {
-        }
-        try {
-            entityManager.createNativeQuery("ALTER TABLE tiendas ALTER COLUMN nombre DROP NOT NULL").executeUpdate();
-        } catch (Exception ignored) {
-        }
-        try {
-            entityManager.createNativeQuery("ALTER TABLE tiendas ALTER COLUMN telefono DROP NOT NULL").executeUpdate();
-        } catch (Exception ignored) {
-        }
-        try {
-            entityManager.createNativeQuery("ALTER TABLE tiendas ALTER COLUMN direccion DROP NOT NULL").executeUpdate();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.warning("Nota: El ajuste de esquema falló o ya no es necesario: " + e.getMessage());
         }
     }
 }

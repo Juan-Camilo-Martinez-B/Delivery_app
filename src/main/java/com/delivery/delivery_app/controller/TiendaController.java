@@ -23,7 +23,7 @@ import com.delivery.delivery_app.model.Tienda;
 import com.delivery.delivery_app.service.TiendaService;
 
 @RestController
-@RequestMapping("/api/clientes/tiendas")
+@RequestMapping("/api/usuarios/tiendas")
 public class TiendaController {
 
     private static final Logger log = Logger.getLogger(TiendaController.class.getName());

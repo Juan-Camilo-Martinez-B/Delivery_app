@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "tiendas")
-@PrimaryKeyJoinColumn(name = "id")
+@PrimaryKeyJoinColumn(name = "usuario_id")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Tienda extends Usuario {
     
