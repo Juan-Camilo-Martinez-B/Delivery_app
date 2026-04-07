@@ -33,6 +33,8 @@ public class Pedido {
     
     @Column(nullable = false)
     private Double total;
+
+
     
     @Column
     private String direccionEntrega;

@@ -102,6 +102,10 @@ public class TiendaService {
     public Producto agregarProducto(String tiendaId, Producto producto) {
         log.info("Agregando producto a tienda ID: " + tiendaId);
 
+        if (producto.getPrecio() != null) {
+            calcularImpuestos(producto);
+        }
+
         Tienda tienda = obtenerTiendaPorId(tiendaId);
 
         if (producto.getId() == null) {
@@ -132,6 +136,7 @@ public class TiendaService {
         }
         if (datos.getPrecio() != null && datos.getPrecio() >= 0) {
             existente.setPrecio(datos.getPrecio());
+            calcularImpuestos(existente);
         }
         if (datos.getCategoria() != null) {
             existente.setCategoria(datos.getCategoria());
@@ -147,6 +152,14 @@ public class TiendaService {
         log.info("Producto actualizado exitosamente");
 
         return productoActualizado;
+    }
+
+    private void calcularImpuestos(Producto producto) {
+        if (producto.getPrecio() != null) {
+            double valorSin = producto.getPrecio() / 1.19;
+            producto.setValorSin(valorSin);
+            producto.setValorIva(producto.getPrecio() - valorSin);
+        }
     }
 
     public List<Pedido> verPedidosPendientes() {

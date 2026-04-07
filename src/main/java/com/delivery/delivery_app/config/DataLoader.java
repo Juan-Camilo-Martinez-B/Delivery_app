@@ -119,8 +119,7 @@ public class DataLoader implements CommandLineRunner {
         producto1.setPrecio(12.99);
         producto1.setDisponible(true);
         producto1.setCategoria("Comida Rápida");
-        producto1.setTienda(tienda);
-        productoRepository.save(producto1);
+        tiendaService.agregarProducto(tienda.getId(), producto1);
 
         Producto producto2 = new Producto();
         producto2.setId(UUID.randomUUID().toString());
@@ -128,8 +127,7 @@ public class DataLoader implements CommandLineRunner {
         producto2.setPrecio(18.50);
         producto2.setDisponible(true);
         producto2.setCategoria("Comida Rápida");
-        producto2.setTienda(tienda);
-        productoRepository.save(producto2);
+        tiendaService.agregarProducto(tienda.getId(), producto2);
 
         Producto producto3 = new Producto();
         producto3.setId(UUID.randomUUID().toString());
@@ -137,8 +135,7 @@ public class DataLoader implements CommandLineRunner {
         producto3.setPrecio(3.50);
         producto3.setDisponible(true);
         producto3.setCategoria("Bebidas");
-        producto3.setTienda(tienda);
-        productoRepository.save(producto3);
+        tiendaService.agregarProducto(tienda.getId(), producto3);
 
         log.info("Productos creados: " + producto1.getNombre() + ", " + producto2.getNombre() + ", " + producto3.getNombre());
         log.info("=== DATOS INICIALES CARGADOS CORRECTAMENTE ===");
@@ -212,7 +209,7 @@ public class DataLoader implements CommandLineRunner {
     
     private void ajustarEsquemaTiendasSiEsNecesario() {
         try {
-            // Eliminar columnas redundantes que ahora están en la tabla 'usuarios'
+            // Ajustar tabla tiendas
             String[] columnsToDrop = {"nombre", "telefono", "direccion"};
             for (String col : columnsToDrop) {
                 try {
@@ -220,7 +217,6 @@ public class DataLoader implements CommandLineRunner {
                 } catch (Exception ignored) {}
             }
 
-            // Manejar el renombre de 'id' a 'usuario_id' de forma segura
             entityManager.createNativeQuery(
                 "DO $$ " +
                 "BEGIN " +
@@ -233,6 +229,25 @@ public class DataLoader implements CommandLineRunner {
                 "    END IF; " +
                 "END $$;"
             ).executeUpdate();
+
+            // Ajustar tabla productos para los nuevos campos de IVA si es necesario
+            // Aunque JPA los crea, si la tabla ya existía podrían faltar o ser nulos
+            entityManager.createNativeQuery(
+                "DO $$ " +
+                "BEGIN " +
+                "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'productos' AND column_name = 'valor_sin') THEN " +
+                "        ALTER TABLE productos ADD COLUMN valor_sin DOUBLE PRECISION; " +
+                "        UPDATE productos SET valor_sin = precio / 1.19 WHERE valor_sin IS NULL; " +
+                "        ALTER TABLE productos ALTER COLUMN valor_sin SET NOT NULL; " +
+                "    END IF; " +
+                "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'productos' AND column_name = 'valor_iva') THEN " +
+                "        ALTER TABLE productos ADD COLUMN valor_iva DOUBLE PRECISION; " +
+                "        UPDATE productos SET valor_iva = precio - (precio / 1.19) WHERE valor_iva IS NULL; " +
+                "        ALTER TABLE productos ALTER COLUMN valor_iva SET NOT NULL; " +
+                "    END IF; " +
+                "END $$;"
+            ).executeUpdate();
+
         } catch (Exception e) {
             log.warning("Nota: El ajuste de esquema falló o ya no es necesario: " + e.getMessage());
         }

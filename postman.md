@@ -1,185 +1,142 @@
-# Postman (Delivery App) – Requests para probar BD
+# Postman (Delivery App) – Guía de Pruebas Completa
 
 ## Variables de entorno (Postman)
 
-Crea un Environment en Postman con:
+Crea un Environment en Postman con estas variables para facilitar las pruebas:
 
 - `baseUrl` = `http://localhost:8080`
-- `usuarioId` = *(vacío al inicio)*
-- `tiendaId` = *(vacío al inicio)*
-- `productoId` = *(vacío al inicio)*
-- `pedidoId` = *(vacío al inicio)*
-- `pagoId` = *(vacío al inicio)*
-- `repartidorId` = *(vacío al inicio)*
+- `tiendaId` = *(ID obtenido al crear la tienda)*
+- `productoId` = *(ID obtenido al crear el producto)*
+- `clienteId` = *(ID obtenido al crear el cliente)*
+- `repartidorId` = *(ID obtenido al crear el repartidor)*
+- `pedidoId` = *(ID obtenido al crear el pedido)*
+- `pagoId` = *(ID obtenido al procesar el pago)*
 
-Headers recomendados en todas:
+---
 
-- `Content-Type: application/json`
+## Flujo del Ciclo de Vida del Pedido (Paso a Paso)
 
-## Flujo recomendado (end-to-end)
-
-### 1) Crear cliente
-
-**POST** `{{baseUrl}}/api/usuarios/clientes`
-
-Body (raw / JSON):
-```json
-{
-  "nombre": "Ana",
-  "telefono": "111",
-  "direccion": "Calle 1"
-}
-```
-
-Guarda `id` de la respuesta como `usuarioId`.
-
-### 2) Crear tienda
-
+### 1) Crear la Tienda
 **POST** `{{baseUrl}}/api/usuarios/tiendas`
-
-Body (raw / JSON):
 ```json
 {
-  "nombre": "Super Tienda",
-  "telefono": "5551234",
-  "direccion": "Calle Comercio 789",
-  "horarioApertura": "08:00:00",
-  "horarioCierre": "22:00:00"
+  "nombre": "Pizzería La Estación",
+  "telefono": "555-9876",
+  "direccion": "Calle Falsa 123",
+  "horarioApertura": "11:00:00",
+  "horarioCierre": "23:00:00"
 }
 ```
+> Guarda el `id` recibido como `tiendaId`.
 
-Guarda `id` como `tiendaId`.
-
-### 3) Agregar producto a una tienda
-
+### 2) Agregar Producto a la Tienda
 **POST** `{{baseUrl}}/api/usuarios/tiendas/{{tiendaId}}/productos`
-
-Body (raw / JSON):
 ```json
 {
-  "nombre": "Hamburguesa Clásica",
-  "precio": 12.99,
+  "nombre": "Pizza Pepperoni Grande",
+  "precio": 15.50,
   "disponible": true,
-  "categoria": "Comida Rápida",
-  "descripcion": "Hamburguesa con queso"
+  "categoria": "Pizzas",
+  "descripcion": "Pizza clásica con extra pepperoni"
 }
 ```
+> Guarda el `id` recibido como `productoId`.
 
-Guarda `id` como `productoId`.
+### 3) Crear el Cliente
+**POST** `{{baseUrl}}/api/usuarios/clientes`
+```json
+{
+  "nombre": "Juan Pérez",
+  "telefono": "3001234567",
+  "direccion": "Avenida Siempreviva 742"
+}
+```
+> Guarda el `id` recibido como `clienteId`.
 
-### 4) Ver todos los productos (cliente)
+### 4) Crear el Repartidor
+**POST** `{{baseUrl}}/api/usuarios/repartidores`
+```json
+{
+  "nombre": "Carlos Moto",
+  "telefono": "3119876543",
+  "direccion": "Carrera 10 #20-30",
+  "vehiculo": "Moto"
+}
+```
+> Guarda el `id` recibido como `repartidorId`.
 
-**GET** `{{baseUrl}}/api/usuarios/clientes/productos`
-
-### 5) Crear pedido (desde clientes)
-
-**POST** `{{baseUrl}}/api/usuarios/clientes/{{usuarioId}}/pedidos`
-
-Body (raw / JSON):
+### 5) Realizar el Pedido (Orden)
+**POST** `{{baseUrl}}/api/usuarios/clientes/{{clienteId}}/pedidos`
 ```json
 [
   {
     "productoId": "{{productoId}}",
     "cantidad": 2,
-    "precioUnitario": 12.99
+    "precioUnitario": 15.50
   }
 ]
 ```
+> Guarda el `id` recibido como `pedidoId`. El estado inicial será `PENDIENTE`.
 
-Guarda `id` como `pedidoId`.
-
-### 6) Obtener pedido
-
-**GET** `{{baseUrl}}/api/pedidos/{{pedidoId}}`
-
-### 7) Generar factura del pedido
-
-**GET** `{{baseUrl}}/api/pedidos/{{pedidoId}}/factura`
-
-### 8) Procesar pago del pedido
-
+### 6) Procesar el Pago (Obligatorio para avanzar)
 **POST** `{{baseUrl}}/api/pagos`
-
-Body (raw / JSON):
 ```json
 {
   "pedidoId": "{{pedidoId}}",
-  "monto": 100.0,
-  "metodo": "EFECTIVO",
-  "referencia": "POSTMAN-REF-1"
+  "monto": 31.00,
+  "metodo": "TARJETA",
+  "referencia": "TRANS-001"
 }
 ```
+> Esto cambia el estado del pedido a `PAGADO` (aunque internamente se mantiene el flujo de negocio).
 
-Guarda `id` como `pagoId`.
-
-### 9) Marcar pedido como listo (tienda)
-
+### 7) Tienda: Marcar Pedido como LISTO
 **PUT** `{{baseUrl}}/api/usuarios/tiendas/pedidos/{{pedidoId}}/listo`
+> **Requisito**: El pedido debe estar pagado. Cambia el estado a `LISTO`.
 
-### 10) Repartidor: ver pedidos disponibles
-
-**GET** `{{baseUrl}}/api/usuarios/repartidores/pedidos/disponibles`
-
-### 11) Repartidor: aceptar pedido
-
+### 8) Repartidor: Aceptar Pedido (Asociación)
 **PUT** `{{baseUrl}}/api/usuarios/repartidores/{{repartidorId}}/pedidos/{{pedidoId}}/aceptar`
+> Vincula al repartidor con el pedido y cambia el estado a `EN_CAMINO`.
 
-### 12) Repartidor: marcar como entregado
-
+### 9) Repartidor: Marcar como ENTREGADO
 **PUT** `{{baseUrl}}/api/usuarios/repartidores/pedidos/{{pedidoId}}/entregado`
+> Cambia el estado final a `ENTREGADO`.
 
-### 13) Crear repartidor (Extra para completar flujo)
+---
 
-**POST** `{{baseUrl}}/api/usuarios/repartidores`
+## Gestión de Estados y Actores
 
-Body (raw / JSON):
-```json
-{
-  "nombre": "Carlos López",
-  "telefono": "987654321",
-  "direccion": "Avenida Central 456",
-  "vehiculo": "Moto"
-}
-```
+| Acción | Actor | Método | Endpoint | Nuevo Estado |
+| :--- | :--- | :--- | :--- | :--- |
+| **Crear Pedido** | Cliente | `POST` | `/api/usuarios/clientes/{id}/pedidos` | `PENDIENTE` |
+| **Pagar** | Cliente | `POST` | `/api/pagos` | `PAGADO` (Estado lógico) |
+| **Preparar** | Tienda | `PUT` | `/api/usuarios/tiendas/pedidos/{id}/listo` | `LISTO` |
+| **Despachar** | Repartidor | `PUT` | `/api/usuarios/repartidores/{repId}/pedidos/{id}/aceptar` | `EN_CAMINO` |
+| **Entregar** | Repartidor | `PUT` | `/api/usuarios/repartidores/pedidos/{id}/entregado` | `ENTREGADO` |
 
-Guarda `id` como `repartidorId`.
+---
 
-### 14) Reembolsar pago
+## Consultas de Seguimiento
 
-**POST** `{{baseUrl}}/api/pagos/{{pagoId}}/reembolsar`
+### Ver Pedidos Disponibles para Repartidores
+**GET** `{{baseUrl}}/api/usuarios/repartidores/pedidos/disponibles`
+> Muestra todos los pedidos que están en estado `LISTO` esperando ser aceptados.
 
-## Gestión de Estados del Pedido
+### Ver Historial de un Cliente
+**GET** `{{baseUrl}}/api/usuarios/clientes/{{clienteId}}/historial`
 
-El estado de un pedido cambia a través de acciones específicas realizadas por los diferentes actores (Tienda y Repartidor) mediante métodos **PUT** (siguiendo las convenciones REST para actualizaciones parciales):
+### Generar Factura
+**GET** `{{baseUrl}}/api/pedidos/{{pedidoId}}/factura`
 
-| Acción | Actor | Endpoint | Nuevo Estado |
-| :--- | :--- | :--- | :--- |
-| **Pagar** | Cliente | `POST /api/pagos` | `PENDIENTE` (con pago asociado) |
-| **Marcar Listo** | Tienda | `PUT /api/usuarios/tiendas/pedidos/{id}/listo` | `LISTO` |
-| **Aceptar** | Repartidor | `PUT /api/usuarios/repartidores/pedidos/{id}/aceptar` | `EN_CAMINO` |
-| **Entregar** | Repartidor | `PUT /api/usuarios/repartidores/pedidos/{id}/entregado` | `ENTREGADO` |
-| **Genérico** | Admin | `PUT /api/pedidos/{id}/estado/{NUEVO_ESTADO}` | *(Cualquiera)* |
+---
 
 ## Cómo modificar el DataLoader
 
-El [DataLoader.java](file:///c:/Users/XTHZC7/Desktop/UCC/Sexto_Semestre/Programacion_orientada_a_objetos/delivery_app/src/main/java/com/delivery/delivery_app/config/DataLoader.java) es el encargado de precargar datos al iniciar la aplicación.
+El archivo [DataLoader.java](file:///c:/Users/XTHZC7/Desktop/UCC/Sexto_Semestre/Programacion_orientada_a_objetos/delivery_app/src/main/java/com/delivery/delivery_app/config/DataLoader.java) carga datos automáticamente al iniciar.
 
-### Cuándo modificarlo:
-1. **Nuevos registros**: Si quieres que la app inicie con más tiendas o productos por defecto.
-2. **Cambios en el Modelo**: Si agregas un nuevo campo obligatorio a `Usuario` o `Producto`, debes actualizar los constructores o setters en el `run`.
-3. **Pruebas de flujo**: Si quieres cambiar el flujo de simulación que imprime logs al final.
-
-### Pasos para hacer cambios:
-1. **Localiza el método `run`**: Aquí se crean las instancias de los objetos.
-2. **Usa los repositorios o servicios**: Siempre usa `tiendaService.crearTienda(tienda)` o `clienteRepository.save(cliente)` para persistir.
-3. **Condición de parada**: El DataLoader tiene un `if` al inicio que verifica si ya existen datos (ej: `if (clienteRepository.findByTelefono("111").isPresent())`). Si quieres que tus cambios se apliquen en una BD ya poblada, debes borrar los datos primero con el script SQL de `TRUNCATE`.
-
-### Ejemplo para agregar una nueva tienda por defecto:
-```java
-Tienda nueva = new Tienda();
-nueva.setId(UUID.randomUUID().toString());
-nueva.setNombre("Nueva Tienda");
-// ... set otros campos
-tiendaService.crearTienda(nueva);
-```
-
+1. **Para agregar datos**: Edita el método `run` y crea nuevas instancias de `Tienda`, `Cliente`, etc.
+2. **Para aplicar cambios**: Si la base de datos ya tiene datos, el DataLoader no se ejecutará (por seguridad). Debes limpiar las tablas primero:
+   ```sql
+   TRUNCATE TABLE pagos, item_pedidos, pedidos, productos, tiendas, clientes, repartidores, usuarios CASCADE;
+   ```
+3. **Ajustes de esquema**: Si cambias la estructura de las tablas, usa el método `ajustarEsquemaTiendasSiEsNecesario` para ejecutar SQL nativo de corrección.

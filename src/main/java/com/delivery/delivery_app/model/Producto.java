@@ -28,6 +28,12 @@ public class Producto {
     @Min(value = 0, message = "El precio no puede ser negativo")
     @Column(nullable = false)
     private Double precio;
+
+    @Column(name = "valor_sin", nullable = false)
+    private Double valorSin;
+
+    @Column(name = "valor_iva", nullable = false)
+    private Double valorIva;
     
     @Column(nullable = false)
     private Boolean disponible = true;
@@ -74,4 +80,10 @@ public class Producto {
     
     public Tienda getTienda() { return tienda; }
     public void setTienda(Tienda tienda) { this.tienda = tienda; }
+    
+    public Double getValorSin() { return valorSin; }
+    public void setValorSin(Double valorSin) { this.valorSin = valorSin; }
+    
+    public Double getValorIva() { return valorIva; }
+    public void setValorIva(Double valorIva) { this.valorIva = valorIva; }
 }
