@@ -1,0 +1,44 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Gestión de Clientes</h2>
+    <button class="btn-primary">+ Nuevo Cliente</button>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Preferencias</th>
+          <th>Puntos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of clientes()">
+          <td><code>{{ c.id | slice:0:8 }}...</code></td>
+          <td class="font-bold">{{ c.nombre }}</td>
+          <td>{{ c.telefono }}</td>
+          <td>{{ c.direccion }}</td>
+          <td>{{ c.preferencias || 'Ninguna' }}</td>
+          <td><span class="badge">{{ c.puntosFidelidad }}</span></td>
+          <td class="actions-cell">
+            <button class="btn-icon">✏️</button>
+            <button class="btn-icon delete">🗑️</button>
+          </td>
+        </tr>
+        
+        <tr *ngIf="clientes().length === 0">
+          <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🔍</div>
+            No se encontraron clientes registrados en la base de datos.<br>
+            <small>Verifica la conexión con el backend (puerto 8080).</small>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

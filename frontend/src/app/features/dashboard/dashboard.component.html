@@ -1,0 +1,57 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>Dashboard Principal</h1>
+    <p>Resumen general de la plataforma de delivery</p>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon clients">👥</div>
+      <div class="stat-info">
+        <h3>Total Clientes</h3>
+        <p class="stat-value">{{ totalClientes() }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orders">📦</div>
+      <div class="stat-info">
+        <h3>Pedidos Activos</h3>
+        <p class="stat-value">{{ totalPedidos() }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stores">🏪</div>
+      <div class="stat-info">
+        <h3>Tiendas Aliadas</h3>
+        <p class="stat-value">{{ totalTiendas() }}</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="recent-activity">
+    <h2>Clientes Recientes</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Puntos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cliente of recentClientes()">
+            <td>{{ cliente.nombre }}</td>
+            <td>{{ cliente.telefono }}</td>
+            <td>{{ cliente.direccion }}</td>
+            <td><span class="badge">{{ cliente.puntosFidelidad }} pts</span></td>
+          </tr>
+          <tr *ngIf="recentClientes().length === 0">
+            <td colspan="4" class="empty-state">No hay clientes registrados</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

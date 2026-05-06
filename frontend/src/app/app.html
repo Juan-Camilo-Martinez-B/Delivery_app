@@ -1,0 +1,36 @@
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-icon">🚀</span>
+      <span class="logo-text">DeliveryApp</span>
+    </div>
+    <nav>
+      <ul>
+        <li>
+          <a routerLink="/dashboard" routerLinkActive="active">
+            <span class="nav-icon">📊</span> Dashboard
+          </a>
+        </li>
+        <li>
+          <a routerLink="/clientes" routerLinkActive="active">
+            <span class="nav-icon">👥</span> Clientes
+          </a>
+        </li>
+        <li>
+          <a routerLink="/tiendas" routerLinkActive="active" class="disabled">
+            <span class="nav-icon">🏪</span> Tiendas
+          </a>
+        </li>
+        <li>
+          <a routerLink="/pedidos" routerLinkActive="active" class="disabled">
+            <span class="nav-icon">📦</span> Pedidos
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
