@@ -35,6 +35,12 @@ public class ClienteService {
     @Autowired
     private CalculadoraPedido calculadoraPedido;
 
+    @Transactional(readOnly = true)
+    public List<Cliente> listarTodosLosClientes() {
+        log.info("Listando todos los clientes");
+        return clienteRepository.findAll();
+    }
+
     @Transactional
     public Cliente crearCliente(Cliente cliente) {
         log.info("Creando nuevo cliente: " + cliente.getNombre());

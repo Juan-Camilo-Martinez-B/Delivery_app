@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import com.delivery.delivery_app.model.Pedido;
 import com.delivery.delivery_app.model.Producto;
 import com.delivery.delivery_app.service.ClienteService;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/usuarios/clientes")
 public class ClienteController {
@@ -29,6 +31,13 @@ public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
+
+    @GetMapping
+    public ResponseEntity<List<Cliente>> listarClientes() {
+        log.info("GET /api/usuarios/clientes - Listando todos los clientes");
+        List<Cliente> clientes = clienteService.listarTodosLosClientes();
+        return new ResponseEntity<>(clientes, HttpStatus.OK);
+    }
 
     @PostMapping
     public ResponseEntity<Cliente> crearCliente(@Valid @RequestBody Cliente cliente) {
