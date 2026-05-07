@@ -14,6 +14,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     
     Optional<Usuario> findByNombre(String nombre);
     
+    Optional<Usuario> findByEmail(String email);
+
+    Boolean existsByEmail(String email);
+    
     Optional<Usuario> findByTelefono(String telefono);
     
     @Query("SELECT u FROM Usuario u WHERE TYPE(u) = :tipo")

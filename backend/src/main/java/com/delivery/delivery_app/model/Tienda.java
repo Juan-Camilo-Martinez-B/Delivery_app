@@ -33,8 +33,8 @@ public class Tienda extends Usuario {
         super();
     }
     
-    public Tienda(String id, String nombre, String telefono, String direccion) {
-        super(id, nombre, telefono, direccion);
+    public Tienda(String id, String nombre, String email, String password, String telefono, String direccion) {
+        super(id, nombre, email, password, telefono, direccion, Rol.TIENDA);
     }
     
     // Getters y Setters

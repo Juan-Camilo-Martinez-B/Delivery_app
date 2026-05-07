@@ -35,6 +35,8 @@ import com.delivery.delivery_app.service.PagoService;
 import com.delivery.delivery_app.service.PedidoService;
 import com.delivery.delivery_app.service.RepartidorService;
 import com.delivery.delivery_app.service.TiendaService;
+import com.delivery.delivery_app.model.Rol;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Component
 public class DataLoader implements CommandLineRunner {
@@ -65,6 +67,9 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private RepartidorService repartidorService;
     
+    @Autowired
+    private PasswordEncoder encoder;
+    
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -82,35 +87,45 @@ public class DataLoader implements CommandLineRunner {
         }
         
         // Crear cliente
-        Cliente cliente = new Cliente();
-        cliente.setId(UUID.randomUUID().toString());
-        cliente.setNombre("Juan Pérez");
-        cliente.setTelefono("123456789");
-        cliente.setDireccion("Calle Principal 123");
+        String passwordDefault = encoder.encode("password123");
+        Cliente cliente = new Cliente(
+                UUID.randomUUID().toString(),
+                "Juan Pérez",
+                "juan@example.com",
+                passwordDefault,
+                "123456789",
+                "Calle Principal 123"
+        );
         clienteRepository.save(cliente);
-        log.info("Cliente creado: " + cliente.getNombre() + " - ID: " + cliente.getId());
+        log.info("Cliente creado: " + cliente.getNombre() + " - Email: " + cliente.getEmail());
 
         // Crear repartidor
-        Repartidor repartidor = new Repartidor();
-        repartidor.setId(UUID.randomUUID().toString());
-        repartidor.setNombre("Carlos López");
-        repartidor.setTelefono("987654321");
-        repartidor.setDireccion("Avenida Central 456");
-        repartidor.setDisponible(true);
-        repartidor.setVehiculo("Moto");
+        Repartidor repartidor = new Repartidor(
+                UUID.randomUUID().toString(),
+                "Carlos López",
+                "carlos@example.com",
+                passwordDefault,
+                "987654321",
+                "Avenida Central 456",
+                true,
+                "Moto"
+        );
         usuarioRepository.save(repartidor);
-        log.info("Repartidor creado: " + repartidor.getNombre() + " - ID: " + repartidor.getId());
+        log.info("Repartidor creado: " + repartidor.getNombre() + " - Email: " + repartidor.getEmail());
 
         // Crear tienda
-        Tienda tienda = new Tienda();
-        tienda.setId(UUID.randomUUID().toString());
-        tienda.setNombre("Super Tienda");
-        tienda.setTelefono("5551234");
-        tienda.setDireccion("Calle Comercio 789");
+        Tienda tienda = new Tienda(
+                UUID.randomUUID().toString(),
+                "Super Tienda",
+                "tienda@example.com",
+                passwordDefault,
+                "5551234",
+                "Calle Comercio 789"
+        );
         tienda.setHorarioApertura(LocalTime.of(8, 0));
         tienda.setHorarioCierre(LocalTime.of(22, 0));
         tiendaService.crearTienda(tienda);
-        log.info("Tienda creada: " + tienda.getNombre() + " - ID: " + tienda.getId());
+        log.info("Tienda creada: " + tienda.getNombre() + " - Email: " + tienda.getEmail());
 
         // Crear productos
         Producto producto1 = new Producto();
@@ -152,13 +167,16 @@ public class DataLoader implements CommandLineRunner {
             log.info("Producto -> ID: " + p.getId() + ", Nombre: " + p.getNombre() + ", Precio: " + p.getPrecio());
         }
         
-        Cliente ana = new Cliente();
-        ana.setId(UUID.randomUUID().toString());
-        ana.setNombre("Ana");
-        ana.setTelefono("111");
-        ana.setDireccion("Calle 1");
+        Cliente ana = new Cliente(
+                UUID.randomUUID().toString(),
+                "Ana",
+                "ana@example.com",
+                passwordDefault,
+                "111",
+                "Calle 1"
+        );
         ana = clienteService.crearCliente(ana);
-        log.info("Cliente simulado creado: " + ana.getNombre() + " - ID: " + ana.getId());
+        log.info("Cliente simulado creado: " + ana.getNombre() + " - Email: " + ana.getEmail());
         
         Producto productoPedido1 = productosDisponibles.get(0);
         Producto productoPedido2 = productosDisponibles.size() > 1 ? productosDisponibles.get(1) : productoPedido1;

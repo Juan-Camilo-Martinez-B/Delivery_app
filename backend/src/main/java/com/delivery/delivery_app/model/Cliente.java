@@ -32,8 +32,8 @@ public class Cliente extends Usuario {
         super();
     }
     
-    public Cliente(String id, String nombre, String telefono, String direccion) {
-        super(id, nombre, telefono, direccion);
+    public Cliente(String id, String nombre, String email, String password, String telefono, String direccion) {
+        super(id, nombre, email, password, telefono, direccion, Rol.CLIENTE);
     }
     
     // Getters y Setters

@@ -1,5 +1,5 @@
 <div class="app-layout">
-  <aside class="sidebar">
+  <aside class="sidebar" *ngIf="authService.isAuthenticated()">
     <div class="logo">
       <span class="logo-icon">🚀</span>
       <span class="logo-text">DeliveryApp</span>
@@ -24,6 +24,12 @@
         <li>
           <a routerLink="/pedidos" routerLinkActive="active" class="disabled">
             <span class="nav-icon">📦</span> Pedidos
+          </a>
+        </li>
+        <li class="nav-separator"></li>
+        <li>
+          <a (click)="logout()" class="logout-link">
+            <span class="nav-icon">🚪</span> Cerrar Sesión
           </a>
         </li>
       </ul>

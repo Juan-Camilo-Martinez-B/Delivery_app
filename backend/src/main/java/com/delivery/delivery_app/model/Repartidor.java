@@ -23,8 +23,8 @@ public class Repartidor extends Usuario {
         super();
     }
     
-    public Repartidor(String id, String nombre, String telefono, String direccion, Boolean disponible, String vehiculo) {
-        super(id, nombre, telefono, direccion);
+    public Repartidor(String id, String nombre, String email, String password, String telefono, String direccion, Boolean disponible, String vehiculo) {
+        super(id, nombre, email, password, telefono, direccion, Rol.REPARTIDOR);
         this.disponible = disponible;
         this.vehiculo = vehiculo;
     }

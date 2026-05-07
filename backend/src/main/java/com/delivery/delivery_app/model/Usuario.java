@@ -7,6 +7,9 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,13 +33,28 @@ public class Usuario {
     @JsonProperty("direccion")
     private String direccion;
     
+    @Column(nullable = false, unique = true)
+    @JsonProperty("email")
+    private String email;
+    
+    @Column(nullable = false)
+    @JsonIgnore
+    private String password;
+    
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
+
     public Usuario() {}
     
-    public Usuario(String id, String nombre, String telefono, String direccion) {
+    public Usuario(String id, String nombre, String email, String password, String telefono, String direccion, Rol rol) {
         this.id = id;
         this.nombre = nombre;
+        this.email = email;
+        this.password = password;
         this.telefono = telefono;
         this.direccion = direccion;
+        this.rol = rol;
     }
     
     // Getters y Setters
@@ -51,6 +69,15 @@ public class Usuario {
     
     public String getDireccion() { return direccion; }
     public void setDireccion(String direccion) { this.direccion = direccion; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public Rol getRol() { return rol; }
+    public void setRol(Rol rol) { this.rol = rol; }
     
     public void actualizarDatos(String nombre, String telefono, String direccion) {
         if (nombre != null && !nombre.trim().isEmpty()) {

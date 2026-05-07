@@ -58,6 +58,21 @@ nav a.active {
   color: white;
 }
 
+.nav-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: 1rem 0;
+}
+
+.logout-link {
+  color: #f87171 !important;
+  cursor: pointer;
+}
+
+.logout-link:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
 .content {
   flex-grow: 1;
   padding: 3rem;
