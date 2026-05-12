@@ -38,7 +38,7 @@ public class Usuario {
     private String email;
     
     @Column(nullable = false)
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     
     @Column(nullable = false)

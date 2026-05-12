@@ -17,6 +17,7 @@ import com.delivery.delivery_app.model.Cliente;
 import com.delivery.delivery_app.repository.PedidoRepository;
 import com.delivery.delivery_app.repository.ProductoRepository;
 import com.delivery.delivery_app.repository.ClienteRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class ClienteService {
@@ -35,6 +36,9 @@ public class ClienteService {
     @Autowired
     private CalculadoraPedido calculadoraPedido;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Transactional(readOnly = true)
     public List<Cliente> listarTodosLosClientes() {
         log.info("Listando todos los clientes");
@@ -50,10 +54,21 @@ public class ClienteService {
         }
         
         // Validar que no exista cliente con el mismo teléfono
-        clienteRepository.findByTelefono(cliente.getTelefono())
-                .ifPresent(u -> {
-                    throw new RuntimeException("Ya existe un cliente con el teléfono: " + cliente.getTelefono());
-                });
+        if (cliente.getTelefono() != null && !cliente.getTelefono().isEmpty()) {
+            clienteRepository.findByTelefono(cliente.getTelefono())
+                    .ifPresent(u -> {
+                        throw new RuntimeException("Ya existe un cliente con el teléfono: " + cliente.getTelefono());
+                    });
+        }
+        
+        // Encriptar contraseña y asignar rol por defecto si es nulo
+        if (cliente.getPassword() != null && !cliente.getPassword().isEmpty()) {
+            cliente.setPassword(passwordEncoder.encode(cliente.getPassword()));
+        }
+        
+        if (cliente.getRol() == null) {
+            cliente.setRol(com.delivery.delivery_app.model.Rol.CLIENTE);
+        }
         
         Cliente clienteGuardado = clienteRepository.save(cliente);
         log.info("Cliente creado exitosamente con ID: " + clienteGuardado.getId());
@@ -69,6 +84,47 @@ public class ClienteService {
                     log.severe("Cliente no encontrado con ID: " + clienteId);
                     return new RuntimeException("Cliente no encontrado con ID: " + clienteId);
                 });
+    }
+
+    @Transactional
+    public Cliente actualizarCliente(String clienteId, Cliente clienteActualizado) {
+        log.info("Actualizando cliente con ID: " + clienteId);
+        
+        Cliente cliente = obtenerClientePorId(clienteId);
+        
+        // Actualizar datos básicos de Usuario
+        cliente.actualizarDatos(
+            clienteActualizado.getNombre(), 
+            clienteActualizado.getTelefono(), 
+            clienteActualizado.getDireccion()
+        );
+        
+        // Actualizar datos específicos de Cliente
+        if (clienteActualizado.getPreferencias() != null) {
+            cliente.setPreferencias(clienteActualizado.getPreferencias());
+        }
+        
+        if (clienteActualizado.getPuntosFidelidad() != null) {
+            cliente.setPuntosFidelidad(clienteActualizado.getPuntosFidelidad());
+        }
+        
+        Cliente clienteGuardado = clienteRepository.save(cliente);
+        log.info("Cliente actualizado exitosamente");
+        
+        return clienteGuardado;
+    }
+
+    @Transactional
+    public void eliminarCliente(String clienteId) {
+        log.info("Eliminando cliente con ID: " + clienteId);
+        
+        Cliente cliente = obtenerClientePorId(clienteId);
+        
+        // Al usar CascadeType.ALL en la relación pedidos de Cliente, 
+        // eliminar el cliente también eliminará sus pedidos asociados.
+        clienteRepository.delete(cliente);
+        
+        log.info("Cliente y sus pedidos asociados eliminados exitosamente");
     }
 
     @Transactional

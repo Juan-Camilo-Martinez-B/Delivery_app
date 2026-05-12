@@ -53,6 +53,30 @@ Crea un Environment en Postman con estas variables para facilitar las pruebas:
 ```
 > Guarda el `id` recibido como `clienteId`.
 
+### 3.1) Listar Todos los Clientes
+**GET** `{{baseUrl}}/api/usuarios/clientes`
+> Devuelve un arreglo con todos los clientes registrados.
+
+### 3.2) Obtener un Cliente por ID
+**GET** `{{baseUrl}}/api/usuarios/clientes/{{clienteId}}`
+> Devuelve la información de un cliente específico.
+
+### 3.3) Actualizar un Cliente
+**PUT** `{{baseUrl}}/api/usuarios/clientes/{{clienteId}}`
+```json
+{
+  "nombre": "Juan Pérez Modificado",
+  "telefono": "3009876543",
+  "direccion": "Avenida Siempreviva 742 Apt 2",
+  "preferencias": "Entregar en portería",
+  "puntosFidelidad": 15
+}
+```
+
+### 3.4) Eliminar un Cliente
+**DELETE** `{{baseUrl}}/api/usuarios/clientes/{{clienteId}}`
+> Elimina al cliente y a todos sus pedidos asociados de la base de datos.
+
 ### 4) Crear el Repartidor
 **POST** `{{baseUrl}}/api/usuarios/repartidores`
 ```json

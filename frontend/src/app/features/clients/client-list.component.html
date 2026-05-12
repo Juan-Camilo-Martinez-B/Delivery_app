@@ -1,7 +1,11 @@
 <div class="page-container">
   <div class="page-header">
     <h2>Gestión de Clientes</h2>
-    <button class="btn-primary">+ Nuevo Cliente</button>
+    <button class="btn-primary" (click)="openCreateModal()">+ Nuevo Cliente</button>
+  </div>
+
+  <div *ngIf="successMessage()" class="alert-success">
+    ✅ {{ successMessage() }}
   </div>
 
   <div class="table-card">
@@ -26,8 +30,8 @@
           <td>{{ c.preferencias || 'Ninguna' }}</td>
           <td><span class="badge">{{ c.puntosFidelidad }}</span></td>
           <td class="actions-cell">
-            <button class="btn-icon">✏️</button>
-            <button class="btn-icon delete">🗑️</button>
+            <button class="btn-icon" (click)="openEditModal(c)">✏️</button>
+            <button class="btn-icon delete" (click)="openDeleteModal(c)">🗑️</button>
           </td>
         </tr>
         
@@ -40,5 +44,132 @@
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Modal Creación -->
+<div class="modal-overlay" *ngIf="isCreateModalOpen()">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Nuevo Cliente</h3>
+      <button class="btn-close" (click)="closeCreateModal()">×</button>
+    </div>
+    <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="form-container">
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input type="text" formControlName="nombre" class="form-control" placeholder="Ej: Juan Pérez" />
+        <span class="error-msg" *ngIf="createForm.get('nombre')?.invalid && createForm.get('nombre')?.touched">
+          Nombre requerido (mínimo 3 caracteres)
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Correo Electrónico *</label>
+        <input type="email" formControlName="email" class="form-control" placeholder="Ej: juan@email.com" />
+        <span class="error-msg" *ngIf="createForm.get('email')?.invalid && createForm.get('email')?.touched">
+          Correo inválido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña *</label>
+        <input type="password" formControlName="password" class="form-control" placeholder="Mínimo 6 caracteres" />
+        <span class="error-msg" *ngIf="createForm.get('password')?.invalid && createForm.get('password')?.touched">
+          Contraseña requerida (mínimo 6 caracteres)
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Teléfono *</label>
+        <input type="text" formControlName="telefono" class="form-control" placeholder="Ej: 3001234567" />
+        <span class="error-msg" *ngIf="createForm.get('telefono')?.invalid && createForm.get('telefono')?.touched">
+          Teléfono inválido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Dirección *</label>
+        <input type="text" formControlName="direccion" class="form-control" placeholder="Ej: Calle 123" />
+      </div>
+
+      <div class="form-group">
+        <label>Preferencias</label>
+        <input type="text" formControlName="preferencias" class="form-control" placeholder="Opcional (se guardará como 'Ninguna' si se deja vacío)" />
+      </div>
+
+      <div class="form-group">
+        <label>Puntos de Fidelidad</label>
+        <input type="number" formControlName="puntosFidelidad" class="form-control" />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeCreateModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="createForm.invalid">Crear Cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edición -->
+<div class="modal-overlay" *ngIf="isEditModalOpen()">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Editar Cliente</h3>
+      <button class="btn-close" (click)="closeEditModal()">×</button>
+    </div>
+    <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="form-container">
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input type="text" formControlName="nombre" class="form-control" />
+        <span class="error-msg" *ngIf="editForm.get('nombre')?.invalid && editForm.get('nombre')?.touched">
+          Nombre requerido (mínimo 3 caracteres)
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Teléfono *</label>
+        <input type="text" formControlName="telefono" class="form-control" />
+        <span class="error-msg" *ngIf="editForm.get('telefono')?.invalid && editForm.get('telefono')?.touched">
+          Teléfono inválido
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Dirección *</label>
+        <input type="text" formControlName="direccion" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label>Preferencias</label>
+        <input type="text" formControlName="preferencias" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label>Puntos de Fidelidad *</label>
+        <input type="number" formControlName="puntosFidelidad" class="form-control" />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeEditModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="editForm.invalid">Guardar Cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Eliminación -->
+<div class="modal-overlay" *ngIf="isDeleteModalOpen()">
+  <div class="modal-content modal-sm">
+    <div class="modal-header border-none">
+      <h3 style="color: #ef4444;">⚠️ Confirmar Eliminación</h3>
+    </div>
+    <div class="modal-body">
+      ¿Está seguro de eliminar a este cliente?<br>
+      <strong style="color: white;">{{ selectedCliente?.nombre }}</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="closeDeleteModal()">No, Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()">Sí, Eliminar</button>
+    </div>
   </div>
 </div>

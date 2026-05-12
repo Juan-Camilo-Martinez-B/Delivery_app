@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,6 +53,22 @@ public class ClienteController {
         log.info("GET /api/clientes/" + clienteId + " - Obteniendo cliente");
         Cliente cliente = clienteService.obtenerClientePorId(clienteId);
         return new ResponseEntity<>(cliente, HttpStatus.OK);
+    }
+
+    @PutMapping("/{clienteId}")
+    public ResponseEntity<Cliente> actualizarCliente(
+            @PathVariable String clienteId, 
+            @Valid @RequestBody Cliente clienteActualizado) {
+        log.info("PUT /api/usuarios/clientes/" + clienteId + " - Actualizando cliente");
+        Cliente cliente = clienteService.actualizarCliente(clienteId, clienteActualizado);
+        return new ResponseEntity<>(cliente, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{clienteId}")
+    public ResponseEntity<Void> eliminarCliente(@PathVariable String clienteId) {
+        log.info("DELETE /api/usuarios/clientes/" + clienteId + " - Eliminando cliente");
+        clienteService.eliminarCliente(clienteId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/{clienteId}/pedidos")

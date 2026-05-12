@@ -20,4 +20,12 @@ export class ClienteService extends ApiService {
   crearCliente(cliente: Partial<Cliente>): Observable<Cliente> {
     return this.post<Cliente>(this.resource, cliente);
   }
+
+  updateCliente(id: string, cliente: Partial<Cliente>): Observable<Cliente> {
+    return this.put<Cliente>(`${this.resource}/${id}`, cliente);
+  }
+
+  deleteCliente(id: string): Observable<void> {
+    return this.delete<void>(`${this.resource}/${id}`);
+  }
 }
